@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { supabase } from '../lib/supabase'
 import RecordForm from '../components/RecordForm'
 
@@ -96,30 +96,96 @@ export default function Dashboard({ user, onLogout }) {
     onLogout()
   }
 
-  const handleExcelExport = () => {
-    const rows = records.map((r, i) => {
+  const handleExcelExport = async () => {
+    const wb = new ExcelJS.Workbook()
+    wb.creator = '보존식 기록표'
+    wb.created = new Date()
+
+    const ws = wb.addWorksheet('보존식기록', {
+      views: [{ state: 'frozen', ySplit: 2 }],
+    })
+
+    // ── 열 너비 & 키 정의 ──
+    ws.columns = [
+      { key: 'no',       width: 6 },
+      { key: 'cDate',    width: 14 },
+      { key: 'cDay',     width: 6 },
+      { key: 'cTime',    width: 8 },
+      { key: 'dDate',    width: 14 },
+      { key: 'dDay',     width: 6 },
+      { key: 'dTime',    width: 8 },
+      { key: 'diet',     width: 45 },
+      { key: 'author',   width: 10 },
+    ]
+
+    // ── 공통 스타일 ──
+    const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }
+    const subHeaderFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4CAF50' } }
+    const oddFill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }
+    const evenFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F8E9' } }
+    const border = {
+      top:    { style: 'thin', color: { argb: 'FFA5D6A7' } },
+      bottom: { style: 'thin', color: { argb: 'FFA5D6A7' } },
+      left:   { style: 'thin', color: { argb: 'FFA5D6A7' } },
+      right:  { style: 'thin', color: { argb: 'FFA5D6A7' } },
+    }
+    const centerAlign = { horizontal: 'center', vertical: 'middle', wrapText: false }
+    const leftAlign   = { horizontal: 'left',   vertical: 'middle', wrapText: true }
+
+    // ── 1행: 타이틀 병합 ──
+    const titleRow = ws.addRow(['보존식 기록표 (-18℃이하 144시간 보관)'])
+    ws.mergeCells('A1:I1')
+    const titleCell = ws.getCell('A1')
+    titleCell.font     = { bold: true, size: 13, color: { argb: 'FFFFFFFF' }, name: 'Malgun Gothic' }
+    titleCell.fill     = headerFill
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' }
+    titleRow.height    = 28
+
+    // ── 2행: 컬럼 헤더 ──
+    const headers = ['번호', '채취일', '채취요일', '채취시간', '폐기일', '폐기요일', '폐기시간', '식단', '작성자']
+    const headerRow = ws.addRow(headers)
+    headerRow.height = 22
+    headerRow.eachCell((cell) => {
+      cell.font      = { bold: true, size: 10, color: { argb: 'FFFFFFFF' }, name: 'Malgun Gothic' }
+      cell.fill      = subHeaderFill
+      cell.alignment = centerAlign
+      cell.border    = border
+    })
+
+    // ── 데이터 행 ──
+    records.forEach((r, i) => {
       const c = parseDateParts(r.collection_date)
       const d = parseDateParts(r.disposal_date)
-      return {
-        번호: i + 1,
-        채취일: `${c.year}-${c.month}-${c.day}`,
-        채취요일: c.dayOfWeek,
-        채취시간: `${c.hour}:${c.minute}`,
-        폐기일: `${d.year}-${d.month}-${d.day}`,
-        폐기요일: d.dayOfWeek,
-        폐기시간: `${d.hour}:${d.minute}`,
-        식단: r.diet,
-        작성자: r.author,
-      }
+      const row = ws.addRow([
+        records.length - i,
+        `${c.year}-${c.month}-${c.day}`,
+        c.dayOfWeek,
+        `${c.hour}:${c.minute}`,
+        `${d.year}-${d.month}-${d.day}`,
+        d.dayOfWeek,
+        `${d.hour}:${d.minute}`,
+        r.diet,
+        r.author,
+      ])
+      row.height = 18
+      const fill = i % 2 === 0 ? oddFill : evenFill
+      row.eachCell({ includeEmpty: true }, (cell, colNum) => {
+        cell.fill      = fill
+        cell.border    = border
+        cell.font      = { size: 10, name: 'Malgun Gothic' }
+        cell.alignment = colNum === 8 ? leftAlign : centerAlign
+      })
     })
-    const ws = XLSX.utils.json_to_sheet(rows)
-    ws['!cols'] = [
-      { wch: 5 }, { wch: 14 }, { wch: 6 }, { wch: 8 },
-      { wch: 14 }, { wch: 6 }, { wch: 8 }, { wch: 40 }, { wch: 10 },
-    ]
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '보존식기록')
-    XLSX.writeFile(wb, `보존식기록_${new Date().toISOString().slice(0, 10)}.xlsx`)
+
+    // ── 다운로드 ──
+    const buf = await wb.xlsx.writeBuffer()
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `보존식기록_${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   // 인쇄: 8개씩 페이지 그룹
