@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토']
@@ -27,6 +27,13 @@ function fieldsToDate({ year, month, day, hour, minute }) {
   return new Date(year, month - 1, day, hour, minute)
 }
 
+const MEAL_FIELDS = [
+  { key: 'morning_snack',   label: '오전간식' },
+  { key: 'lunch',           label: '점\u00A0\u00A0\u00A0심' },
+  { key: 'afternoon_snack', label: '오후간식' },
+  { key: 'dinner',          label: '석\u00A0\u00A0\u00A0식' },
+]
+
 export default function RecordForm({ record, userProfile, userId, onClose, onSaved }) {
   const now = new Date()
   const initCollection = record
@@ -34,7 +41,12 @@ export default function RecordForm({ record, userProfile, userId, onClose, onSav
     : dateToFields(now)
 
   const [collection, setCollection] = useState(initCollection)
-  const [diet, setDiet] = useState(record?.diet || '')
+  const [meals, setMeals] = useState({
+    morning_snack:   record?.morning_snack   || '',
+    lunch:           record?.lunch           || '',
+    afternoon_snack: record?.afternoon_snack || '',
+    dinner:          record?.dinner          || '',
+  })
   const [author, setAuthor] = useState(record?.author || userProfile?.display_name || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -52,17 +64,21 @@ export default function RecordForm({ record, userProfile, userId, onClose, onSav
   const pad = (n) => String(n).padStart(2, '0')
 
   const handleSave = async () => {
-    if (!diet.trim()) return setError('식단을 입력해주세요.')
+    const hasAnyMeal = Object.values(meals).some(v => v.trim())
+    if (!hasAnyMeal) return setError('식단을 하나 이상 입력해주세요.')
     if (!author.trim()) return setError('작성자를 입력해주세요.')
     setLoading(true)
     setError('')
 
     const payload = {
-      user_id: userId,
+      user_id:         userId,
       collection_date: fieldsToDate(collection).toISOString(),
-      disposal_date: disposalDate.toISOString(),
-      diet: diet.trim(),
-      author: author.trim(),
+      disposal_date:   disposalDate.toISOString(),
+      morning_snack:   meals.morning_snack.trim(),
+      lunch:           meals.lunch.trim(),
+      afternoon_snack: meals.afternoon_snack.trim(),
+      dinner:          meals.dinner.trim(),
+      author:          author.trim(),
     }
 
     let err
@@ -122,15 +138,22 @@ export default function RecordForm({ record, userProfile, userId, onClose, onSav
             </div>
           </div>
 
-          {/* 식단 */}
+          {/* 식단 (4분류) */}
           <div className="field-section">
-            <label className="section-label">식단</label>
-            <textarea
-              value={diet}
-              onChange={(e) => setDiet(e.target.value)}
-              placeholder="식단 내용을 입력하세요"
-              rows={4}
-            />
+            <label className="section-label">식단 <span className="auto-label">(해당 항목만 입력)</span></label>
+            <div className="meal-grid">
+              {MEAL_FIELDS.map(({ key, label }) => (
+                <div key={key} className="meal-row">
+                  <span className="meal-label">{label.replace(/\u00A0/g, ' ')}</span>
+                  <textarea
+                    value={meals[key]}
+                    onChange={(e) => setMeals({ ...meals, [key]: e.target.value })}
+                    placeholder={`${label.replace(/\u00A0/g, '')} 내용`}
+                    rows={2}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* 작성자 */}

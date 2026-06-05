@@ -18,10 +18,23 @@ CREATE TABLE public.records (
   user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
   collection_date TIMESTAMPTZ NOT NULL,
   disposal_date TIMESTAMPTZ NOT NULL,
-  diet TEXT NOT NULL,
+  morning_snack TEXT NOT NULL DEFAULT '',   -- 오전간식
+  lunch         TEXT NOT NULL DEFAULT '',   -- 점심
+  afternoon_snack TEXT NOT NULL DEFAULT '', -- 오후간식
+  dinner        TEXT NOT NULL DEFAULT '',   -- 석식
   author TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- =============================================
+-- 기존 테이블에 컬럼 추가 (이미 생성된 경우)
+-- =============================================
+ALTER TABLE public.records DROP COLUMN IF EXISTS diet;
+ALTER TABLE public.records
+  ADD COLUMN IF NOT EXISTS morning_snack   TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS lunch           TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS afternoon_snack TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS dinner          TEXT NOT NULL DEFAULT '';
 
 -- =============================================
 -- RLS 비활성화 (anon key로 직접 접근)

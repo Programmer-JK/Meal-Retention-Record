@@ -18,10 +18,18 @@ function parseDateParts(isoString) {
   }
 }
 
+const MEAL_ROWS = [
+  { key: 'morning_snack',   label: '오전간식' },
+  { key: 'lunch',           label: '점\u3000심' },
+  { key: 'afternoon_snack', label: '오후간식' },
+  { key: 'dinner',          label: '석\u3000식' },
+]
+
 // 인쇄용 카드 컴포넌트 (이미지와 동일한 형식)
-function PrintCard({ record, index }) {
+function PrintCard({ record }) {
   const c = parseDateParts(record.collection_date)
   const d = parseDateParts(record.disposal_date)
+  const filledMeals = MEAL_ROWS.filter(({ key }) => record[key])
 
   return (
     <div className="print-card">
@@ -47,7 +55,14 @@ function PrintCard({ record, index }) {
 
       <div className="pc-diet-section">
         <div className="pc-diet-label">식 단</div>
-        <div className="pc-diet-content">{record.diet}</div>
+        <div className="pc-diet-rows">
+          {filledMeals.map(({ key, label }) => (
+            <div key={key} className="pc-diet-row">
+              <span className="pc-meal-label">{label}</span>
+              <span className="pc-meal-content">{record[key]}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="pc-footer">
@@ -126,22 +141,25 @@ export default function Dashboard({ user, onLogout }) {
 
     // ── 열 너비 & 키 정의 ──
     ws.columns = [
-      { key: 'no',       width: 6 },
-      { key: 'cDate',    width: 14 },
-      { key: 'cDay',     width: 6 },
-      { key: 'cTime',    width: 8 },
-      { key: 'dDate',    width: 14 },
-      { key: 'dDay',     width: 6 },
-      { key: 'dTime',    width: 8 },
-      { key: 'diet',     width: 45 },
-      { key: 'author',   width: 10 },
+      { key: 'no',              width: 6  },
+      { key: 'cDate',           width: 14 },
+      { key: 'cDay',            width: 6  },
+      { key: 'cTime',           width: 8  },
+      { key: 'dDate',           width: 14 },
+      { key: 'dDay',            width: 6  },
+      { key: 'dTime',           width: 8  },
+      { key: 'morning_snack',   width: 30 },
+      { key: 'lunch',           width: 30 },
+      { key: 'afternoon_snack', width: 30 },
+      { key: 'dinner',          width: 30 },
+      { key: 'author',          width: 10 },
     ]
 
     // ── 공통 스타일 ──
-    const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }
+    const headerFill    = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }
     const subHeaderFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4CAF50' } }
-    const oddFill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }
-    const evenFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F8E9' } }
+    const oddFill       = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }
+    const evenFill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F8E9' } }
     const border = {
       top:    { style: 'thin', color: { argb: 'FFA5D6A7' } },
       bottom: { style: 'thin', color: { argb: 'FFA5D6A7' } },
@@ -149,19 +167,19 @@ export default function Dashboard({ user, onLogout }) {
       right:  { style: 'thin', color: { argb: 'FFA5D6A7' } },
     }
     const centerAlign = { horizontal: 'center', vertical: 'middle', wrapText: false }
-    const leftAlign   = { horizontal: 'left',   vertical: 'middle', wrapText: true }
+    const leftAlign   = { horizontal: 'left',   vertical: 'middle', wrapText: true  }
 
     // ── 1행: 타이틀 병합 ──
     const titleRow = ws.addRow(['보존식 기록표 (-18℃이하 144시간 보관)'])
-    ws.mergeCells('A1:I1')
+    ws.mergeCells('A1:L1')
     const titleCell = ws.getCell('A1')
-    titleCell.font     = { bold: true, size: 13, color: { argb: 'FFFFFFFF' }, name: 'Malgun Gothic' }
-    titleCell.fill     = headerFill
+    titleCell.font      = { bold: true, size: 13, color: { argb: 'FFFFFFFF' }, name: 'Malgun Gothic' }
+    titleCell.fill      = headerFill
     titleCell.alignment = { horizontal: 'center', vertical: 'middle' }
-    titleRow.height    = 28
+    titleRow.height     = 28
 
     // ── 2행: 컬럼 헤더 ──
-    const headers = ['번호', '채취일', '채취요일', '채취시간', '폐기일', '폐기요일', '폐기시간', '식단', '작성자']
+    const headers = ['번호', '채취일', '채취요일', '채취시간', '폐기일', '폐기요일', '폐기시간', '오전간식', '점심', '오후간식', '석식', '작성자']
     const headerRow = ws.addRow(headers)
     headerRow.height = 22
     headerRow.eachCell((cell) => {
@@ -172,6 +190,7 @@ export default function Dashboard({ user, onLogout }) {
     })
 
     // ── 데이터 행 ──
+    const mealCols = new Set([8, 9, 10, 11]) // 오전간식~석식 열 번호
     records.forEach((r, i) => {
       const c = parseDateParts(r.collection_date)
       const d = parseDateParts(r.disposal_date)
@@ -183,7 +202,10 @@ export default function Dashboard({ user, onLogout }) {
         `${d.year}-${d.month}-${d.day}`,
         d.dayOfWeek,
         `${d.hour}:${d.minute}`,
-        r.diet,
+        r.morning_snack   || '',
+        r.lunch           || '',
+        r.afternoon_snack || '',
+        r.dinner          || '',
         r.author,
       ])
       row.height = 18
@@ -192,7 +214,7 @@ export default function Dashboard({ user, onLogout }) {
         cell.fill      = fill
         cell.border    = border
         cell.font      = { size: 10, name: 'Malgun Gothic' }
-        cell.alignment = colNum === 8 ? leftAlign : centerAlign
+        cell.alignment = mealCols.has(colNum) ? leftAlign : centerAlign
       })
     })
 
@@ -284,6 +306,10 @@ export default function Dashboard({ user, onLogout }) {
                     const c = parseDateParts(r.collection_date)
                     const d = parseDateParts(r.disposal_date)
                     const selected = selectedIds.has(r.id)
+                    const dietSummary = MEAL_ROWS
+                      .filter(({ key }) => r[key])
+                      .map(({ key, label }) => `${label.replace(/\u3000/g, '')}: ${r[key]}`)
+                      .join('\n')
                     return (
                       <tr key={r.id} className={selected ? 'tr-selected' : ''} onClick={() => toggleSelect(r.id)}>
                         <td className="td-cb" onClick={e => e.stopPropagation()}>
@@ -292,7 +318,7 @@ export default function Dashboard({ user, onLogout }) {
                         <td className="td-num">{records.length - i}</td>
                         <td className="td-date">{c.year}.{c.month}.{c.day} ({c.dayOfWeek}) {c.hour}:{c.minute}</td>
                         <td className="td-date">{d.year}.{d.month}.{d.day} ({d.dayOfWeek}) {d.hour}:{d.minute}</td>
-                        <td className="td-diet">{r.diet}</td>
+                        <td className="td-diet">{dietSummary}</td>
                         <td className="td-author">{r.author}</td>
                         <td className="td-actions" onClick={e => e.stopPropagation()}>
                           <button className="btn-edit" onClick={() => { setEditRecord(r); setShowForm(true) }}>수정</button>
@@ -325,10 +351,12 @@ export default function Dashboard({ user, onLogout }) {
                       <span className="mc-label">폐기일</span>
                       <span>{d.year}.{d.month}.{d.day} ({d.dayOfWeek}) {d.hour}:{d.minute}</span>
                     </div>
-                    <div className="mc-row">
-                      <span className="mc-label">식단</span>
-                      <span className="mc-diet">{r.diet}</span>
-                    </div>
+                    {MEAL_ROWS.filter(({ key }) => r[key]).map(({ key, label }) => (
+                      <div key={key} className="mc-row">
+                        <span className="mc-label">{label.replace(/\u3000/g, '')}</span>
+                        <span className="mc-diet">{r[key]}</span>
+                      </div>
+                    ))}
                     <div className="mc-row">
                       <span className="mc-label">작성자</span>
                       <span>{r.author}</span>
