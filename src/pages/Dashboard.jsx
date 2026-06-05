@@ -66,6 +66,7 @@ export default function Dashboard({ user, onLogout }) {
   const [loading, setLoading] = useState(true)
   const [filterStart, setFilterStart] = useState('')
   const [filterEnd, setFilterEnd] = useState('')
+  const [selectedIds, setSelectedIds] = useState(new Set())
 
   useEffect(() => {
     fetchRecords()
@@ -83,7 +84,25 @@ export default function Dashboard({ user, onLogout }) {
 
     const { data } = await query
     setRecords(data || [])
+    setSelectedIds(new Set())
     setLoading(false)
+  }
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === records.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(records.map(r => r.id)))
+    }
   }
 
   const handleDelete = async (id) => {
@@ -188,10 +207,11 @@ export default function Dashboard({ user, onLogout }) {
     URL.revokeObjectURL(url)
   }
 
-  // 인쇄: 8개씩 페이지 그룹
+  // 인쇄: 선택된 항목만 (없으면 전체), 8개씩 페이지 그룹
+  const printRecords = selectedIds.size > 0 ? records.filter(r => selectedIds.has(r.id)) : records
   const printPages = []
-  for (let i = 0; i < records.length; i += 8) {
-    printPages.push(records.slice(i, i + 8))
+  for (let i = 0; i < printRecords.length; i += 8) {
+    printPages.push(printRecords.slice(i, i + 8))
   }
 
   return (
@@ -225,7 +245,7 @@ export default function Dashboard({ user, onLogout }) {
             엑셀 다운로드
           </button>
           <button className="btn-secondary" onClick={() => window.print()} disabled={records.length === 0}>
-            인쇄
+            인쇄{selectedIds.size > 0 ? ` (${selectedIds.size}개 선택)` : ''}
           </button>
         </div>
       </div>
@@ -243,6 +263,14 @@ export default function Dashboard({ user, onLogout }) {
               <table className="record-table">
                 <thead>
                   <tr>
+                    <th className="th-cb">
+                      <input
+                        type="checkbox"
+                        checked={records.length > 0 && selectedIds.size === records.length}
+                        ref={el => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < records.length }}
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
                     <th>번호</th>
                     <th>채취일</th>
                     <th>폐기일</th>
@@ -255,14 +283,18 @@ export default function Dashboard({ user, onLogout }) {
                   {records.map((r, i) => {
                     const c = parseDateParts(r.collection_date)
                     const d = parseDateParts(r.disposal_date)
+                    const selected = selectedIds.has(r.id)
                     return (
-                      <tr key={r.id}>
+                      <tr key={r.id} className={selected ? 'tr-selected' : ''} onClick={() => toggleSelect(r.id)}>
+                        <td className="td-cb" onClick={e => e.stopPropagation()}>
+                          <input type="checkbox" checked={selected} onChange={() => toggleSelect(r.id)} />
+                        </td>
                         <td className="td-num">{records.length - i}</td>
                         <td className="td-date">{c.year}.{c.month}.{c.day} ({c.dayOfWeek}) {c.hour}:{c.minute}</td>
                         <td className="td-date">{d.year}.{d.month}.{d.day} ({d.dayOfWeek}) {d.hour}:{d.minute}</td>
                         <td className="td-diet">{r.diet}</td>
                         <td className="td-author">{r.author}</td>
-                        <td className="td-actions">
+                        <td className="td-actions" onClick={e => e.stopPropagation()}>
                           <button className="btn-edit" onClick={() => { setEditRecord(r); setShowForm(true) }}>수정</button>
                           <button className="btn-delete" onClick={() => handleDelete(r.id)}>삭제</button>
                         </td>
@@ -278,9 +310,13 @@ export default function Dashboard({ user, onLogout }) {
               {records.map((r, i) => {
                 const c = parseDateParts(r.collection_date)
                 const d = parseDateParts(r.disposal_date)
+                const selected = selectedIds.has(r.id)
                 return (
-                  <div key={r.id} className="mobile-card">
-                    <div className="mc-num">#{records.length - i}</div>
+                  <div key={r.id} className={`mobile-card${selected ? ' mc-selected' : ''}`} onClick={() => toggleSelect(r.id)}>
+                    <div className="mc-top">
+                      <div className="mc-num">#{records.length - i}</div>
+                      <input type="checkbox" className="mc-cb" checked={selected} onChange={() => toggleSelect(r.id)} onClick={e => e.stopPropagation()} />
+                    </div>
                     <div className="mc-row">
                       <span className="mc-label">채취일</span>
                       <span>{c.year}.{c.month}.{c.day} ({c.dayOfWeek}) {c.hour}:{c.minute}</span>
@@ -297,7 +333,7 @@ export default function Dashboard({ user, onLogout }) {
                       <span className="mc-label">작성자</span>
                       <span>{r.author}</span>
                     </div>
-                    <div className="mc-actions">
+                    <div className="mc-actions" onClick={e => e.stopPropagation()}>
                       <button className="btn-edit" onClick={() => { setEditRecord(r); setShowForm(true) }}>수정</button>
                       <button className="btn-delete" onClick={() => handleDelete(r.id)}>삭제</button>
                     </div>

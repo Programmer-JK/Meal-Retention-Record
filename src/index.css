@@ -298,6 +298,13 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; fon
 .td-author { white-space: nowrap; }
 .td-actions { white-space: nowrap; }
 
+.th-cb, .td-cb { width: 36px; text-align: center; padding: 8px 4px; }
+.th-cb input, .td-cb input { cursor: pointer; width: 15px; height: 15px; accent-color: var(--primary); }
+
+.record-table tr { cursor: pointer; }
+.record-table tr.tr-selected td { background: #e8f5e9 !important; }
+.record-table tr.tr-selected:hover td { background: #dcedc8 !important; }
+
 /* 데스크탑에서는 테이블 표시, 모바일 카드 숨김 */
 .mobile-list { display: none; }
 
@@ -340,6 +347,18 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; fon
   }
 
   .mc-diet { white-space: pre-wrap; word-break: break-all; }
+
+  .mobile-card { cursor: pointer; }
+  .mobile-card.mc-selected { border-left-color: #1565c0; background: #e3f2fd; }
+
+  .mc-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .mc-cb { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
 
   .mc-actions {
     display: flex;
