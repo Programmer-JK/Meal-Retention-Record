@@ -58,9 +58,9 @@ function PrintCard({ record, index }) {
   )
 }
 
-export default function Dashboard({ session }) {
+export default function Dashboard({ user, onLogout }) {
   const [records, setRecords] = useState([])
-  const [userProfile, setUserProfile] = useState(null)
+  const userProfile = user
   const [showForm, setShowForm] = useState(false)
   const [editRecord, setEditRecord] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -68,28 +68,18 @@ export default function Dashboard({ session }) {
   const [filterEnd, setFilterEnd] = useState('')
 
   useEffect(() => {
-    fetchProfile()
     fetchRecords()
   }, [])
 
-  const fetchProfile = async () => {
-    const { data } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', session.user.id)
-      .single()
-    setUserProfile(data)
-  }
-
-  const fetchRecords = async () => {
+  const fetchRecords = async (start = filterStart, end = filterEnd) => {
     setLoading(true)
     let query = supabase
       .from('records')
       .select('*')
       .order('collection_date', { ascending: false })
 
-    if (filterStart) query = query.gte('collection_date', filterStart + 'T00:00:00')
-    if (filterEnd) query = query.lte('collection_date', filterEnd + 'T23:59:59')
+    if (start) query = query.gte('collection_date', start + 'T00:00:00')
+    if (end) query = query.lte('collection_date', end + 'T23:59:59')
 
     const { data } = await query
     setRecords(data || [])
@@ -102,8 +92,8 @@ export default function Dashboard({ session }) {
     fetchRecords()
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
+  const handleLogout = () => {
+    onLogout()
   }
 
   const handleExcelExport = () => {
@@ -159,7 +149,7 @@ export default function Dashboard({ session }) {
           <span className="filter-sep">~</span>
           <input type="date" value={filterEnd} onChange={(e) => setFilterEnd(e.target.value)} />
           <button className="btn-secondary" onClick={fetchRecords}>조회</button>
-          <button className="btn-secondary" onClick={() => { setFilterStart(''); setFilterEnd(''); setTimeout(fetchRecords, 0) }}>초기화</button>
+          <button className="btn-secondary" onClick={() => { setFilterStart(''); setFilterEnd(''); fetchRecords('', '') }}>초기화</button>
         </div>
         <div className="action-row">
           <button className="btn-primary" onClick={() => { setEditRecord(null); setShowForm(true) }}>
@@ -269,7 +259,7 @@ export default function Dashboard({ session }) {
         <RecordForm
           record={editRecord}
           userProfile={userProfile}
-          userId={session.user.id}
+          userId={user.id}
           onClose={() => setShowForm(false)}
           onSaved={() => { setShowForm(false); fetchRecords() }}
         />
