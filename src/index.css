@@ -107,6 +107,14 @@ button {
   cursor: not-allowed;
 }
 
+.btn-dinner {
+  background: #00695c;
+}
+
+.btn-dinner:hover:not(:disabled) {
+  background: #004d40;
+}
+
 .btn-edit {
   background: #e3f2fd;
   color: #1565c0;
@@ -533,6 +541,10 @@ button {
   .action-row button {
     flex: 1;
   }
+
+  .no-mobile {
+    display: none !important;
+  }
 }
 
 /* =============================================
@@ -780,7 +792,7 @@ button {
   }
 
   .print-card {
-    background: #e8f5e9 !important;
+    background: #e0f2f1 !important;
     border: 1.5px solid #555;
     border-radius: 3px;
     padding: 3mm 4mm;
@@ -862,7 +874,7 @@ button {
     padding: 2mm 3mm;
     min-width: 14mm;
     letter-spacing: 0.5pt;
-    background: #d0ecd2;
+    background: #b2dfdb;
   }
 
   .pc-diet-rows {
@@ -881,21 +893,8 @@ button {
     border-bottom: none;
   }
 
-  .pc-meal-label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 6.5pt;
-    white-space: nowrap;
-    padding: 1mm 1.5mm;
-    min-width: 11mm;
-    border-right: 1px solid #bbb;
-    background: #e6f4e7;
-  }
-
   .pc-meal-content {
-    padding: 1mm 2mm;
+    padding: 2mm 3mm;
     flex: 1;
     font-size: 7pt;
     line-height: 1.4;
@@ -924,8 +923,31 @@ button {
   }
 
   .pc-org {
-    font-size: 6.5pt;
-    color: #444;
-    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 1.5mm;
+  }
+
+  .pc-org-icon {
+    font-size: 11pt;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .pc-org-text {
+    text-align: left;
+  }
+
+  .pc-org-name {
+    font-size: 5.5pt;
+    font-weight: bold;
+    color: #222;
+    white-space: nowrap;
+  }
+
+  .pc-org-sub {
+    font-size: 4pt;
+    color: #555;
+    white-space: nowrap;
   }
 }

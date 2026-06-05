@@ -56,9 +56,8 @@ function PrintCard({ record }) {
       <div className="pc-diet-section">
         <div className="pc-diet-label">식 단</div>
         <div className="pc-diet-rows">
-          {filledMeals.map(({ key, label }) => (
+          {filledMeals.map(({ key }) => (
             <div key={key} className="pc-diet-row">
-              <span className="pc-meal-label">{label}</span>
               <span className="pc-meal-content">{record[key]}</span>
             </div>
           ))}
@@ -67,7 +66,12 @@ function PrintCard({ record }) {
 
       <div className="pc-footer">
         <div className="pc-author">작성자 : <span>{record.author}</span></div>
-        <div className="pc-org">도봉구 어린이급식관리지원센터</div>
+        <div className="pc-org">
+          <div className="pc-org-text">
+            <div className="pc-org-name">도봉구 어린이급식관리지원센터</div>
+            <div className="pc-org-sub">Center for Children's Foodservice Management</div>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -78,6 +82,7 @@ export default function Dashboard({ user, onLogout }) {
   const userProfile = user
   const [showForm, setShowForm] = useState(false)
   const [editRecord, setEditRecord] = useState(null)
+  const [formMealType, setFormMealType] = useState('day')
   const [loading, setLoading] = useState(true)
   const [filterStart, setFilterStart] = useState('')
   const [filterEnd, setFilterEnd] = useState('')
@@ -260,13 +265,16 @@ export default function Dashboard({ user, onLogout }) {
           <button className="btn-secondary" onClick={() => { setFilterStart(''); setFilterEnd(''); fetchRecords('', '') }}>초기화</button>
         </div>
         <div className="action-row">
-          <button className="btn-primary" onClick={() => { setEditRecord(null); setShowForm(true) }}>
-            + 기록 추가
+          <button className="btn-primary" onClick={() => { setEditRecord(null); setFormMealType('day'); setShowForm(true) }}>
+            + 낮 기록
           </button>
-          <button className="btn-secondary" onClick={handleExcelExport} disabled={records.length === 0}>
+          <button className="btn-primary btn-dinner" onClick={() => { setEditRecord(null); setFormMealType('dinner'); setShowForm(true) }}>
+            + 석식
+          </button>
+          <button className="btn-secondary no-mobile" onClick={handleExcelExport} disabled={records.length === 0}>
             엑셀 다운로드
           </button>
-          <button className="btn-secondary" onClick={() => window.print()} disabled={records.length === 0}>
+          <button className="btn-secondary no-mobile" onClick={() => window.print()} disabled={records.length === 0}>
             인쇄{selectedIds.size > 0 ? ` (${selectedIds.size}개 선택)` : ''}
           </button>
         </div>
@@ -321,7 +329,7 @@ export default function Dashboard({ user, onLogout }) {
                         <td className="td-diet">{dietSummary}</td>
                         <td className="td-author">{r.author}</td>
                         <td className="td-actions" onClick={e => e.stopPropagation()}>
-                          <button className="btn-edit" onClick={() => { setEditRecord(r); setShowForm(true) }}>수정</button>
+                          <button className="btn-edit" onClick={() => { setFormMealType(r.dinner && !r.morning_snack && !r.lunch && !r.afternoon_snack ? 'dinner' : 'day'); setEditRecord(r); setShowForm(true) }}>수정</button>
                           <button className="btn-delete" onClick={() => handleDelete(r.id)}>삭제</button>
                         </td>
                       </tr>
@@ -362,7 +370,7 @@ export default function Dashboard({ user, onLogout }) {
                       <span>{r.author}</span>
                     </div>
                     <div className="mc-actions" onClick={e => e.stopPropagation()}>
-                      <button className="btn-edit" onClick={() => { setEditRecord(r); setShowForm(true) }}>수정</button>
+                      <button className="btn-edit" onClick={() => { setFormMealType(r.dinner && !r.morning_snack && !r.lunch && !r.afternoon_snack ? 'dinner' : 'day'); setEditRecord(r); setShowForm(true) }}>수정</button>
                       <button className="btn-delete" onClick={() => handleDelete(r.id)}>삭제</button>
                     </div>
                   </div>
@@ -390,6 +398,7 @@ export default function Dashboard({ user, onLogout }) {
           record={editRecord}
           userProfile={userProfile}
           userId={user.id}
+          mealType={formMealType}
           onClose={() => setShowForm(false)}
           onSaved={() => { setShowForm(false); fetchRecords() }}
         />

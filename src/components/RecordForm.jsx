@@ -3,44 +3,37 @@ import { supabase } from '../lib/supabase'
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토']
 
-function addDays(date, days) {
-  const d = new Date(date)
-  d.setDate(d.getDate() + days)
-  return d
-}
-
-function dateToFields(d) {
-  return {
-    year: d.getFullYear(),
-    month: d.getMonth() + 1,
-    day: d.getDate(),
-    hour: d.getHours(),
-    minute: d.getMinutes(),
-  }
-}
-
 function fieldsToDayOfWeek({ year, month, day }) {
   return DAY_NAMES[new Date(year, month - 1, day).getDay()]
 }
 
-function fieldsToDate({ year, month, day, hour, minute }) {
-  return new Date(year, month - 1, day, hour, minute)
-}
-
-const MEAL_FIELDS = [
+const MEAL_FIELDS_DAY = [
   { key: 'morning_snack',   label: '오전간식' },
   { key: 'lunch',           label: '점\u00A0\u00A0\u00A0심' },
   { key: 'afternoon_snack', label: '오후간식' },
-  { key: 'dinner',          label: '석\u00A0\u00A0\u00A0식' },
 ]
 
-export default function RecordForm({ record, userProfile, userId, onClose, onSaved }) {
-  const now = new Date()
-  const initCollection = record
-    ? dateToFields(new Date(record.collection_date))
-    : dateToFields(now)
+const MEAL_FIELDS_DINNER = [
+  { key: 'dinner', label: '석\u00A0\u00A0\u00A0식' },
+]
 
-  const [collection, setCollection] = useState(initCollection)
+// 채취 시간: 낮=11:00, 석식=16:00 고정
+// 폐기 시간: 항상 09:00 고정 (채취일+7일)
+const COLLECTION_HOUR = { day: 11, dinner: 16 }
+
+export default function RecordForm({ record, userProfile, userId, onClose, onSaved, mealType = 'day' }) {
+  const activeMealFields = mealType === 'dinner' ? MEAL_FIELDS_DINNER : MEAL_FIELDS_DAY
+  const fixedHour = COLLECTION_HOUR[mealType] ?? 11
+
+  const now = new Date()
+  const initDate = record ? new Date(record.collection_date) : now
+
+  const [collection, setCollection] = useState({
+    year:  initDate.getFullYear(),
+    month: initDate.getMonth() + 1,
+    day:   initDate.getDate(),
+  })
+
   const [meals, setMeals] = useState({
     morning_snack:   record?.morning_snack   || '',
     lunch:           record?.lunch           || '',
@@ -51,28 +44,33 @@ export default function RecordForm({ record, userProfile, userId, onClose, onSav
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // 폐기일 = 채취일 + 7일 (자동 계산)
-  const disposalDate = addDays(fieldsToDate(collection), 7)
-  const disposal = dateToFields(disposalDate)
-
-  const years = Array.from({ length: 11 }, (_, i) => 2020 + i)
-  const months = Array.from({ length: 12 }, (_, i) => i + 1)
-  const days = Array.from({ length: 31 }, (_, i) => i + 1)
-  const hours = Array.from({ length: 24 }, (_, i) => i)
-  const minutes = Array.from({ length: 60 }, (_, i) => i)
-
   const pad = (n) => String(n).padStart(2, '0')
 
+  // 폐기일 = 채취일 + 7일, 09:00 고정
+  const disposalDate = new Date(collection.year, collection.month - 1, collection.day + 7, 9, 0)
+  const disposal = {
+    year:      disposalDate.getFullYear(),
+    month:     disposalDate.getMonth() + 1,
+    day:       disposalDate.getDate(),
+    dayOfWeek: DAY_NAMES[disposalDate.getDay()],
+  }
+
+  const years  = Array.from({ length: 11 }, (_, i) => 2020 + i)
+  const months = Array.from({ length: 12 }, (_, i) => i + 1)
+  const days   = Array.from({ length: 31 }, (_, i) => i + 1)
+
   const handleSave = async () => {
-    const hasAnyMeal = Object.values(meals).some(v => v.trim())
+    const hasAnyMeal = activeMealFields.some(({ key }) => meals[key].trim())
     if (!hasAnyMeal) return setError('식단을 하나 이상 입력해주세요.')
     if (!author.trim()) return setError('작성자를 입력해주세요.')
     setLoading(true)
     setError('')
 
+    const collectionDate = new Date(collection.year, collection.month - 1, collection.day, fixedHour, 0)
+
     const payload = {
       user_id:         userId,
-      collection_date: fieldsToDate(collection).toISOString(),
+      collection_date: collectionDate.toISOString(),
       disposal_date:   disposalDate.toISOString(),
       morning_snack:   meals.morning_snack.trim(),
       lunch:           meals.lunch.trim(),
@@ -97,7 +95,7 @@ export default function RecordForm({ record, userProfile, userId, onClose, onSav
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-header">
-          <h2>{record ? '기록 수정' : '기록 추가'}</h2>
+          <h2>{record ? (mealType === 'dinner' ? '석식 기록 수정' : '낮 기록 수정') : (mealType === 'dinner' ? '석식 기록 추가' : '낮 기록 추가')}</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
@@ -116,12 +114,7 @@ export default function RecordForm({ record, userProfile, userId, onClose, onSav
                 {days.map((d) => <option key={d} value={d}>{pad(d)}일</option>)}
               </select>
               <span className="day-of-week">({fieldsToDayOfWeek(collection)})</span>
-              <select value={collection.hour} onChange={(e) => setCollection({ ...collection, hour: +e.target.value })}>
-                {hours.map((h) => <option key={h} value={h}>{pad(h)}시</option>)}
-              </select>
-              <select value={collection.minute} onChange={(e) => setCollection({ ...collection, minute: +e.target.value })}>
-                {minutes.map((m) => <option key={m} value={m}>{pad(m)}분</option>)}
-              </select>
+              <span className="date-fields readonly"><span>{pad(fixedHour)}시 00분</span></span>
             </div>
           </div>
 
@@ -132,17 +125,16 @@ export default function RecordForm({ record, userProfile, userId, onClose, onSav
               <span>{disposal.year}년</span>
               <span>{pad(disposal.month)}월</span>
               <span>{pad(disposal.day)}일</span>
-              <span>({fieldsToDayOfWeek(disposal)})</span>
-              <span>{pad(disposal.hour)}시</span>
-              <span>{pad(disposal.minute)}분</span>
+              <span>({disposal.dayOfWeek})</span>
+              <span>09시 00분</span>
             </div>
           </div>
 
-          {/* 식단 (4분류) */}
+          {/* 식단 */}
           <div className="field-section">
-            <label className="section-label">식단 <span className="auto-label">(해당 항목만 입력)</span></label>
+            <label className="section-label">식단</label>
             <div className="meal-grid">
-              {MEAL_FIELDS.map(({ key, label }) => (
+              {activeMealFields.map(({ key, label }) => (
                 <div key={key} className="meal-row">
                   <span className="meal-label">{label.replace(/\u00A0/g, ' ')}</span>
                   <textarea
