@@ -97,6 +97,7 @@ export default function Dashboard({ user, onLogout }) {
     let query = supabase
       .from('records')
       .select('*')
+      .eq('user_id', user.id)
       .order('collection_date', { ascending: false })
 
     if (start) query = query.gte('collection_date', start + 'T00:00:00')
