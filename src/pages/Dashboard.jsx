@@ -84,15 +84,8 @@ export default function Dashboard({ user, onLogout }) {
   const [editRecord, setEditRecord] = useState(null)
   const [formMealType, setFormMealType] = useState('day')
   const [loading, setLoading] = useState(true)
-  const [filterStart, setFilterStart] = useState(() => {
-    const d = new Date()
-    d.setMonth(d.getMonth() - 1)
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-  })
-  const [filterEnd, setFilterEnd] = useState(() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-  })
+  const [filterStart, setFilterStart] = useState('')
+  const [filterEnd, setFilterEnd] = useState('')
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const PAGE_SIZE = 16
@@ -305,13 +298,13 @@ export default function Dashboard({ user, onLogout }) {
           <button className="btn-quick" onClick={() => setQuickFilter('month')}>한달</button>
           <button className="btn-quick" onClick={() => setQuickFilter('3month')}>3달</button>
         </div>
-        <div className="filter-row">
+        {/* <div className="filter-row">
           <input type="date" value={filterStart} onChange={(e) => setFilterStart(e.target.value)} />
           <span className="filter-sep">~</span>
           <input type="date" value={filterEnd} onChange={(e) => setFilterEnd(e.target.value)} />
-          <button className="btn-secondary" onClick={fetchRecords}>조회</button>
+          <button className="btn-secondary" onClick={() => fetchRecords()}>조회</button>
           <button className="btn-secondary" onClick={() => { setFilterStart(''); setFilterEnd(''); fetchRecords('', '') }}>초기화</button>
-        </div>
+        </div> */}
         <div className="action-row">
           <button className="btn-primary" onClick={() => { setEditRecord(null); setFormMealType('day'); setShowForm(true) }}>
             + 낮 기록
