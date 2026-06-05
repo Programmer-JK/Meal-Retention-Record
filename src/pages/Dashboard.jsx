@@ -84,8 +84,15 @@ export default function Dashboard({ user, onLogout }) {
   const [editRecord, setEditRecord] = useState(null)
   const [formMealType, setFormMealType] = useState('day')
   const [loading, setLoading] = useState(true)
-  const [filterStart, setFilterStart] = useState('')
-  const [filterEnd, setFilterEnd] = useState('')
+  const [filterStart, setFilterStart] = useState(() => {
+    const d = new Date()
+    d.setMonth(d.getMonth() - 1)
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  })
+  const [filterEnd, setFilterEnd] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  })
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const PAGE_SIZE = 16
