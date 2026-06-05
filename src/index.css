@@ -337,6 +337,31 @@ button {
   color: var(--text-secondary);
 }
 
+.quick-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 4px;
+}
+
+.btn-quick {
+  background: var(--card-bg);
+  color: var(--primary-dark);
+  border: 1.5px solid var(--border);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.btn-quick:hover {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+}
+
 .action-row {
   display: flex;
   gap: 8px;
@@ -503,15 +528,11 @@ button {
   .mc-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-bottom: 8px;
   }
 
   .mc-cb {
-    width: 22px;
-    height: 22px;
-    cursor: pointer;
-    accent-color: var(--primary);
+    display: none;
   }
 
   .mc-actions {
@@ -542,9 +563,56 @@ button {
     flex: 1;
   }
 
+  .quick-filter-row {
+    width: 100%;
+  }
+
+  .quick-filter-row .btn-quick {
+    flex: 1;
+  }
+
   .no-mobile {
     display: none !important;
   }
+}
+
+/* =============================================
+   페이지네이션
+============================================= */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px 20px;
+}
+
+.btn-page {
+  background: var(--white);
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  padding: 12px 28px;
+  border-radius: var(--radius);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.btn-page:hover:not(:disabled) {
+  background: var(--card-bg);
+}
+
+.btn-page:disabled {
+  border-color: #ccc;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 120px;
+  text-align: center;
 }
 
 /* =============================================

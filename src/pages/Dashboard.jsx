@@ -19,10 +19,10 @@ function parseDateParts(isoString) {
 }
 
 const MEAL_ROWS = [
-  { key: 'morning_snack',   label: '오전간식' },
-  { key: 'lunch',           label: '점\u3000심' },
+  { key: 'morning_snack', label: '오전간식' },
+  { key: 'lunch', label: '점\u3000심' },
   { key: 'afternoon_snack', label: '오후간식' },
-  { key: 'dinner',          label: '석\u3000식' },
+  { key: 'dinner', label: '석\u3000식' },
 ]
 
 // 인쇄용 카드 컴포넌트 (이미지와 동일한 형식)
@@ -87,10 +87,40 @@ export default function Dashboard({ user, onLogout }) {
   const [filterStart, setFilterStart] = useState('')
   const [filterEnd, setFilterEnd] = useState('')
   const [selectedIds, setSelectedIds] = useState(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
+  const PAGE_SIZE = 16
 
   useEffect(() => {
     fetchRecords()
   }, [])
+
+  const toLocalDate = (d) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+
+  const setQuickFilter = (type) => {
+    const end = new Date()
+    const start = new Date()
+    if (type === 'today') {
+      const s = toLocalDate(end)
+      setFilterStart(s); setFilterEnd(s); fetchRecords(s, s)
+    } else if (type === 'week') {
+      start.setDate(start.getDate() - 6)
+      const s = toLocalDate(start), e = toLocalDate(end)
+      setFilterStart(s); setFilterEnd(e); fetchRecords(s, e)
+    } else if (type === 'month') {
+      start.setMonth(start.getMonth() - 1)
+      const s = toLocalDate(start), e = toLocalDate(end)
+      setFilterStart(s); setFilterEnd(e); fetchRecords(s, e)
+    } else if (type === '3month') {
+      start.setMonth(start.getMonth() - 3)
+      const s = toLocalDate(start), e = toLocalDate(end)
+      setFilterStart(s); setFilterEnd(e); fetchRecords(s, e)
+    }
+  }
 
   const fetchRecords = async (start = filterStart, end = filterEnd) => {
     setLoading(true)
@@ -106,6 +136,7 @@ export default function Dashboard({ user, onLogout }) {
     const { data } = await query
     setRecords(data || [])
     setSelectedIds(new Set())
+    setCurrentPage(1)
     setLoading(false)
   }
 
@@ -147,52 +178,52 @@ export default function Dashboard({ user, onLogout }) {
 
     // ── 열 너비 & 키 정의 ──
     ws.columns = [
-      { key: 'no',              width: 6  },
-      { key: 'cDate',           width: 14 },
-      { key: 'cDay',            width: 6  },
-      { key: 'cTime',           width: 8  },
-      { key: 'dDate',           width: 14 },
-      { key: 'dDay',            width: 6  },
-      { key: 'dTime',           width: 8  },
-      { key: 'morning_snack',   width: 30 },
-      { key: 'lunch',           width: 30 },
+      { key: 'no', width: 6 },
+      { key: 'cDate', width: 14 },
+      { key: 'cDay', width: 6 },
+      { key: 'cTime', width: 8 },
+      { key: 'dDate', width: 14 },
+      { key: 'dDay', width: 6 },
+      { key: 'dTime', width: 8 },
+      { key: 'morning_snack', width: 30 },
+      { key: 'lunch', width: 30 },
       { key: 'afternoon_snack', width: 30 },
-      { key: 'dinner',          width: 30 },
-      { key: 'author',          width: 10 },
+      { key: 'dinner', width: 30 },
+      { key: 'author', width: 10 },
     ]
 
     // ── 공통 스타일 ──
-    const headerFill    = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }
+    const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }
     const subHeaderFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4CAF50' } }
-    const oddFill       = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }
-    const evenFill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F8E9' } }
+    const oddFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }
+    const evenFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F8E9' } }
     const border = {
-      top:    { style: 'thin', color: { argb: 'FFA5D6A7' } },
+      top: { style: 'thin', color: { argb: 'FFA5D6A7' } },
       bottom: { style: 'thin', color: { argb: 'FFA5D6A7' } },
-      left:   { style: 'thin', color: { argb: 'FFA5D6A7' } },
-      right:  { style: 'thin', color: { argb: 'FFA5D6A7' } },
+      left: { style: 'thin', color: { argb: 'FFA5D6A7' } },
+      right: { style: 'thin', color: { argb: 'FFA5D6A7' } },
     }
     const centerAlign = { horizontal: 'center', vertical: 'middle', wrapText: false }
-    const leftAlign   = { horizontal: 'left',   vertical: 'middle', wrapText: true  }
+    const leftAlign = { horizontal: 'left', vertical: 'middle', wrapText: true }
 
     // ── 1행: 타이틀 병합 ──
     const titleRow = ws.addRow(['보존식 기록표 (-18℃이하 144시간 보관)'])
     ws.mergeCells('A1:L1')
     const titleCell = ws.getCell('A1')
-    titleCell.font      = { bold: true, size: 13, color: { argb: 'FFFFFFFF' }, name: 'Malgun Gothic' }
-    titleCell.fill      = headerFill
+    titleCell.font = { bold: true, size: 13, color: { argb: 'FFFFFFFF' }, name: 'Malgun Gothic' }
+    titleCell.fill = headerFill
     titleCell.alignment = { horizontal: 'center', vertical: 'middle' }
-    titleRow.height     = 28
+    titleRow.height = 28
 
     // ── 2행: 컬럼 헤더 ──
     const headers = ['번호', '채취일', '채취요일', '채취시간', '폐기일', '폐기요일', '폐기시간', '오전간식', '점심', '오후간식', '석식', '작성자']
     const headerRow = ws.addRow(headers)
     headerRow.height = 22
     headerRow.eachCell((cell) => {
-      cell.font      = { bold: true, size: 10, color: { argb: 'FFFFFFFF' }, name: 'Malgun Gothic' }
-      cell.fill      = subHeaderFill
+      cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' }, name: 'Malgun Gothic' }
+      cell.fill = subHeaderFill
       cell.alignment = centerAlign
-      cell.border    = border
+      cell.border = border
     })
 
     // ── 데이터 행 ──
@@ -208,18 +239,18 @@ export default function Dashboard({ user, onLogout }) {
         `${d.year}-${d.month}-${d.day}`,
         d.dayOfWeek,
         `${d.hour}:${d.minute}`,
-        r.morning_snack   || '',
-        r.lunch           || '',
+        r.morning_snack || '',
+        r.lunch || '',
         r.afternoon_snack || '',
-        r.dinner          || '',
+        r.dinner || '',
         r.author,
       ])
       row.height = 18
       const fill = i % 2 === 0 ? oddFill : evenFill
       row.eachCell({ includeEmpty: true }, (cell, colNum) => {
-        cell.fill      = fill
-        cell.border    = border
-        cell.font      = { size: 10, name: 'Malgun Gothic' }
+        cell.fill = fill
+        cell.border = border
+        cell.font = { size: 10, name: 'Malgun Gothic' }
         cell.alignment = mealCols.has(colNum) ? leftAlign : centerAlign
       })
     })
@@ -234,6 +265,9 @@ export default function Dashboard({ user, onLogout }) {
     a.click()
     URL.revokeObjectURL(url)
   }
+
+  const totalPages = Math.ceil(records.length / PAGE_SIZE)
+  const pagedRecords = records.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   // 인쇄: 선택된 항목만 (없으면 전체), 8개씩 페이지 그룹
   const printRecords = selectedIds.size > 0 ? records.filter(r => selectedIds.has(r.id)) : records
@@ -258,6 +292,12 @@ export default function Dashboard({ user, onLogout }) {
 
       {/* ── 필터 & 버튼 (화면 전용) ── */}
       <div className="dash-controls no-print">
+        <div className="quick-filter-row">
+          <button className="btn-quick" onClick={() => setQuickFilter('today')}>당일</button>
+          <button className="btn-quick" onClick={() => setQuickFilter('week')}>일주일</button>
+          <button className="btn-quick" onClick={() => setQuickFilter('month')}>한달</button>
+          <button className="btn-quick" onClick={() => setQuickFilter('3month')}>3달</button>
+        </div>
         <div className="filter-row">
           <input type="date" value={filterStart} onChange={(e) => setFilterStart(e.target.value)} />
           <span className="filter-sep">~</span>
@@ -311,10 +351,11 @@ export default function Dashboard({ user, onLogout }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {records.map((r, i) => {
+                  {pagedRecords.map((r, i) => {
                     const c = parseDateParts(r.collection_date)
                     const d = parseDateParts(r.disposal_date)
                     const selected = selectedIds.has(r.id)
+                    const globalIdx = (currentPage - 1) * PAGE_SIZE + i
                     const dietSummary = MEAL_ROWS
                       .filter(({ key }) => r[key])
                       .map(({ key, label }) => `${label.replace(/\u3000/g, '')}: ${r[key]}`)
@@ -324,7 +365,7 @@ export default function Dashboard({ user, onLogout }) {
                         <td className="td-cb" onClick={e => e.stopPropagation()}>
                           <input type="checkbox" checked={selected} onChange={() => toggleSelect(r.id)} />
                         </td>
-                        <td className="td-num">{records.length - i}</td>
+                        <td className="td-num">{records.length - globalIdx}</td>
                         <td className="td-date">{c.year}.{c.month}.{c.day} ({c.dayOfWeek}) {c.hour}:{c.minute}</td>
                         <td className="td-date">{d.year}.{d.month}.{d.day} ({d.dayOfWeek}) {d.hour}:{d.minute}</td>
                         <td className="td-diet">{dietSummary}</td>
@@ -342,14 +383,15 @@ export default function Dashboard({ user, onLogout }) {
 
             {/* 모바일: 카드형 리스트 */}
             <div className="mobile-list">
-              {records.map((r, i) => {
+              {pagedRecords.map((r, i) => {
                 const c = parseDateParts(r.collection_date)
                 const d = parseDateParts(r.disposal_date)
                 const selected = selectedIds.has(r.id)
+                const globalIdx = (currentPage - 1) * PAGE_SIZE + i
                 return (
                   <div key={r.id} className={`mobile-card${selected ? ' mc-selected' : ''}`} onClick={() => toggleSelect(r.id)}>
                     <div className="mc-top">
-                      <div className="mc-num">#{records.length - i}</div>
+                      <div className="mc-num">#{records.length - globalIdx}</div>
                       <input type="checkbox" className="mc-cb" checked={selected} onChange={() => toggleSelect(r.id)} onClick={e => e.stopPropagation()} />
                     </div>
                     <div className="mc-row">
@@ -378,6 +420,23 @@ export default function Dashboard({ user, onLogout }) {
                 )
               })}
             </div>
+
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  className="btn-page"
+                  onClick={() => setCurrentPage(p => p - 1)}
+                  disabled={currentPage === 1}
+                >◀ 이전</button>
+                <span className="page-info">{currentPage} / {totalPages} 페이지</span>
+                <button
+                  className="btn-page"
+                  onClick={() => setCurrentPage(p => p + 1)}
+                  disabled={currentPage === totalPages}
+                >다음 ▶</button>
+              </div>
+            )}
           </>
         )}
       </div>
