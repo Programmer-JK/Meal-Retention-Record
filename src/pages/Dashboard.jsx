@@ -57,7 +57,7 @@ function PrintCard({ record }) {
         <div className="pc-diet-label">식 단</div>
         <div className="pc-diet-rows">
           {filledMeals.map(({ key }) => (
-            <div key={key} className="pc-diet-row">
+            <div key={key} className={`pc-diet-row${key === 'lunch' ? ' pc-diet-row-lunch' : ''}`}>
               <span className="pc-meal-content">{record[key]}</span>
             </div>
           ))}

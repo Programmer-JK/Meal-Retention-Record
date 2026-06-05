@@ -949,12 +949,18 @@ button {
     flex: 1;
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
 
   .pc-diet-row {
     display: flex;
     flex: 1;
+    min-height: 0;
     border-bottom: 1px solid #bbb;
+  }
+
+  .pc-diet-row-lunch {
+    flex: 2;
   }
 
   .pc-diet-row:last-child {
