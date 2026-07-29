@@ -30,8 +30,8 @@ body {
   font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 19px;
-  line-height: 1.7;
+  font-size: 23px;
+  line-height: 1.8;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -68,7 +68,7 @@ button {
   border: none;
   outline: none;
   font-family: inherit;
-  font-size: 18px;
+  font-size: 22px;
   transition: all 0.15s;
 }
 
@@ -119,9 +119,9 @@ button {
   background: #e3f2fd;
   color: #1565c0;
   border: 1px solid #90caf9;
-  padding: 7px 14px;
+  padding: 9px 16px;
   border-radius: 4px;
-  font-size: 15px;
+  font-size: 19px;
 }
 
 .btn-edit:hover {
@@ -132,9 +132,9 @@ button {
   background: var(--danger-light);
   color: var(--danger);
   border: 1px solid #ef9a9a;
-  padding: 7px 14px;
+  padding: 9px 16px;
   border-radius: 4px;
-  font-size: 15px;
+  font-size: 19px;
   margin-left: 4px;
 }
 
@@ -146,9 +146,9 @@ button {
   background: transparent;
   color: #ffffff;
   border: 1px solid #ddd;
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: var(--radius);
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .btn-logout:hover {
@@ -184,14 +184,14 @@ button {
 }
 
 .login-header h1 {
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 700;
   color: var(--primary-dark);
   margin-bottom: 6px;
 }
 
 .login-header p {
-  font-size: 17px;
+  font-size: 21px;
   color: var(--text-secondary);
 }
 
@@ -204,9 +204,9 @@ button {
 .login-tabs .tab {
   flex: 1;
   background: none;
-  padding: 13px;
+  padding: 15px;
   color: var(--text-secondary);
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
@@ -223,18 +223,18 @@ button {
 
 .form-group label {
   display: block;
-  font-size: 17px;
+  font-size: 21px;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .form-group input {
   width: 100%;
-  padding: 14px 17px;
+  padding: 16px 19px;
   border: 1.5px solid #ddd;
   border-radius: var(--radius);
-  font-size: 19px;
+  font-size: 23px;
   font-family: inherit;
   transition: border-color 0.15s;
 }
@@ -246,17 +246,17 @@ button {
 
 .error-msg {
   color: var(--danger);
-  font-size: 17px;
+  font-size: 21px;
   margin-bottom: 12px;
   background: var(--danger-light);
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 6px;
 }
 
 .login-card .btn-primary {
   width: 100%;
-  padding: 17px;
-  font-size: 21px;
+  padding: 20px;
+  font-size: 26px;
   border-radius: var(--radius);
   margin-top: 4px;
 }
@@ -292,7 +292,7 @@ button {
 }
 
 .dash-title h1 {
-  font-size: 24px;
+  font-size: 30px;
   font-weight: 700;
 }
 
@@ -303,7 +303,7 @@ button {
 }
 
 .dash-user>span {
-  font-size: 17px;
+  font-size: 21px;
   opacity: 0.9;
 }
 
@@ -350,10 +350,10 @@ button {
   background: var(--card-bg);
   color: var(--primary-dark);
   border: 1.5px solid var(--border);
-  padding: 8px 18px;
+  padding: 10px 22px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .btn-quick:hover {
@@ -388,15 +388,15 @@ button {
 .record-table th {
   background: var(--primary);
   color: var(--white);
-  padding: 15px 17px;
+  padding: 17px 19px;
   text-align: left;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .record-table td {
-  padding: 13px 16px;
+  padding: 16px 18px;
   border-bottom: 1px solid #f0f0f0;
   vertical-align: top;
 }
@@ -411,14 +411,14 @@ button {
 
 .td-num {
   color: var(--text-secondary);
-  font-size: 16px;
-  width: 44px;
+  font-size: 20px;
+  width: 52px;
   text-align: center;
 }
 
 .td-date {
   white-space: nowrap;
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .td-diet {
@@ -490,17 +490,17 @@ button {
   }
 
   .mc-num {
-    font-size: 17px;
+    font-size: 21px;
     color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: 600;
   }
 
   .mc-row {
     display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    font-size: 17px;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 21px;
     align-items: flex-start;
   }
 
@@ -591,9 +591,9 @@ button {
   background: var(--white);
   color: var(--primary);
   border: 2px solid var(--primary);
-  padding: 12px 28px;
+  padding: 14px 32px;
   border-radius: var(--radius);
-  font-size: 17px;
+  font-size: 21px;
   font-weight: 600;
 }
 
@@ -608,10 +608,10 @@ button {
 }
 
 .page-info {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--text);
-  min-width: 120px;
+  min-width: 140px;
   text-align: center;
 }
 
@@ -623,7 +623,7 @@ button {
   text-align: center;
   padding: 60px 20px;
   color: var(--text-secondary);
-  font-size: 20px;
+  font-size: 24px;
 }
 
 /* =============================================
@@ -661,13 +661,13 @@ button {
 }
 
 .modal-header h2 {
-  font-size: 24px;
+  font-size: 30px;
   font-weight: 700;
 }
 
 .modal-close {
   background: none;
-  font-size: 24px;
+  font-size: 30px;
   color: var(--text-secondary);
   padding: 6px 10px;
   border-radius: 4px;
@@ -690,15 +690,15 @@ button {
 .section-label {
   display: block;
   font-weight: 600;
-  font-size: 17px;
+  font-size: 21px;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .auto-label {
   font-weight: 400;
   color: var(--accent);
-  font-size: 13px;
+  font-size: 17px;
   margin-left: 4px;
 }
 
@@ -710,10 +710,10 @@ button {
 }
 
 .date-fields select {
-  padding: 11px 15px;
+  padding: 13px 17px;
   border: 1.5px solid #ddd;
   border-radius: 6px;
-  font-size: 18px;
+  font-size: 22px;
   font-family: inherit;
   background: var(--white);
   cursor: pointer;
@@ -725,15 +725,15 @@ button {
 }
 
 .date-fields.readonly span {
-  padding: 11px 13px;
+  padding: 13px 15px;
   background: #f5f5f5;
   border-radius: 6px;
-  font-size: 18px;
+  font-size: 22px;
   color: var(--text-secondary);
 }
 
 .day-of-week {
-  font-size: 18px;
+  font-size: 22px;
   color: var(--primary-dark);
   font-weight: 600;
   padding: 0 2px;
@@ -741,10 +741,10 @@ button {
 
 .field-section textarea {
   width: 100%;
-  padding: 13px 15px;
+  padding: 15px 17px;
   border: 1.5px solid #ddd;
   border-radius: var(--radius);
-  font-size: 18px;
+  font-size: 22px;
   font-family: inherit;
   resize: vertical;
   line-height: 1.6;
@@ -776,10 +776,10 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 76px;
-  padding: 11px 9px;
+  min-width: 88px;
+  padding: 13px 11px;
   background: var(--card-bg);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--primary-dark);
   border-right: 1px solid #ddd;
@@ -791,8 +791,8 @@ button {
   border: none;
   border-radius: 0;
   resize: none;
-  padding: 11px 13px;
-  font-size: 17px;
+  padding: 13px 15px;
+  font-size: 21px;
 }
 
 .meal-row textarea:focus {
@@ -802,10 +802,10 @@ button {
 
 .field-section input[type="text"] {
   width: 100%;
-  padding: 13px 15px;
+  padding: 15px 17px;
   border: 1.5px solid #ddd;
   border-radius: var(--radius);
-  font-size: 18px;
+  font-size: 22px;
   font-family: inherit;
 }
 
