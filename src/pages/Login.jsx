@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { hashPassword } from '../lib/auth'
 
 export default function Login({ onLogin }) {
@@ -18,12 +18,7 @@ export default function Login({ onLogin }) {
 
     const hash = await hashPassword(password)
 
-    const { data, error: dbError } = await supabase
-      .from('users')
-      .select('id, username, display_name')
-      .eq('username', username.trim().toLowerCase())
-      .eq('password_hash', hash)
-      .single()
+    const { data, error: dbError } = await api.login(username, hash)
 
     if (dbError || !data) {
       setError('아이디 또는 비밀번호가 올바르지 않습니다.')
@@ -43,18 +38,10 @@ export default function Login({ onLogin }) {
 
     const hash = await hashPassword(password)
 
-    const { data, error: dbError } = await supabase
-      .from('users')
-      .insert({
-        username: username.trim().toLowerCase(),
-        password_hash: hash,
-        display_name: displayName.trim(),
-      })
-      .select('id, username, display_name')
-      .single()
+    const { data, error: dbError } = await api.register(username, hash, displayName)
 
     if (dbError) {
-      setError(dbError.code === '23505' ? '이미 사용 중인 아이디입니다.' : '계정 생성에 실패했습니다.')
+      setError(dbError.status === 409 ? '이미 사용 중인 아이디입니다.' : '계정 생성에 실패했습니다.')
     } else {
       onLogin(data)
     }

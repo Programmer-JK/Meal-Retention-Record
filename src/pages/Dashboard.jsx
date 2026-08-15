@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import ExcelJS from 'exceljs'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import RecordForm from '../components/RecordForm'
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토']
@@ -124,16 +124,7 @@ export default function Dashboard({ user, onLogout }) {
 
   const fetchRecords = async (start = filterStart, end = filterEnd) => {
     setLoading(true)
-    let query = supabase
-      .from('records')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('collection_date', { ascending: false })
-
-    if (start) query = query.gte('collection_date', start + 'T00:00:00')
-    if (end) query = query.lte('collection_date', end + 'T23:59:59')
-
-    const { data } = await query
+    const { data } = await api.getRecords(user.id, start, end)
     setRecords(data || [])
     setSelectedIds(new Set())
     setCurrentPage(1)
@@ -159,7 +150,7 @@ export default function Dashboard({ user, onLogout }) {
 
   const handleDelete = async (id) => {
     if (!window.confirm('이 기록을 삭제하시겠습니까?')) return
-    await supabase.from('records').delete().eq('id', id)
+    await api.deleteRecord(id)
     fetchRecords()
   }
 

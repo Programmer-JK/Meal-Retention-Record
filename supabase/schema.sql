@@ -1,10 +1,10 @@
 -- =============================================
--- 보존식 기록표 DB 스키마 (커스텀 인증)
--- Supabase SQL Editor에서 실행하세요
+-- 보존식 기록표 DB 스키마
+-- Neon 콘솔 SQL Editor에서 실행하세요
 -- =============================================
 
 -- 1. 사용자 테이블
-CREATE TABLE public.users (
+CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,       -- SHA-256 해시값
@@ -13,7 +13,7 @@ CREATE TABLE public.users (
 );
 
 -- 2. 보존식 기록 테이블
-CREATE TABLE public.records (
+CREATE TABLE IF NOT EXISTS public.records (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
   collection_date TIMESTAMPTZ NOT NULL,
@@ -25,23 +25,6 @@ CREATE TABLE public.records (
   author TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
--- =============================================
--- 기존 테이블에 컬럼 추가 (이미 생성된 경우)
--- =============================================
-ALTER TABLE public.records DROP COLUMN IF EXISTS diet;
-ALTER TABLE public.records
-  ADD COLUMN IF NOT EXISTS morning_snack   TEXT NOT NULL DEFAULT '',
-  ADD COLUMN IF NOT EXISTS lunch           TEXT NOT NULL DEFAULT '',
-  ADD COLUMN IF NOT EXISTS afternoon_snack TEXT NOT NULL DEFAULT '',
-  ADD COLUMN IF NOT EXISTS dinner          TEXT NOT NULL DEFAULT '';
-
--- =============================================
--- RLS 비활성화 (anon key로 직접 접근)
--- 내부 시스템용: anon key를 외부에 노출하지 마세요
--- =============================================
-ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.records DISABLE ROW LEVEL SECURITY;
 
 -- =============================================
 -- 계정 생성 방법

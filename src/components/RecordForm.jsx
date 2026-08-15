@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -81,9 +81,9 @@ export default function RecordForm({ record, userProfile, userId, onClose, onSav
 
     let err
     if (record) {
-      ;({ error: err } = await supabase.from('records').update(payload).eq('id', record.id))
+      ;({ error: err } = await api.updateRecord(record.id, payload))
     } else {
-      ;({ error: err } = await supabase.from('records').insert(payload))
+      ;({ error: err } = await api.createRecord(payload))
     }
 
     if (err) setError('저장 중 오류가 발생했습니다.')
