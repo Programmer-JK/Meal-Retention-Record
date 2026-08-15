@@ -1,4 +1,4 @@
-const SESSION_KEY = 'foodlog_user'
+const SESSION_KEY = 'foodlog_user_v2'
 const HASH_PREFIX = 'foodlog:'
 
 // SHA-256 해시 (Web Crypto API - 외부 라이브러리 불필요)
